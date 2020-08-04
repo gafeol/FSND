@@ -40,7 +40,6 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
     genres = db.Column(db.String(500))
     shows = db.relationship('Show', backref='venue')
 
@@ -59,7 +58,6 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
     website = db.Column(db.String(120))
     shows = db.relationship('Show', backref='artist')
 

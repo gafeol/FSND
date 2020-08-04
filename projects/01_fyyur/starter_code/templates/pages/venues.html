@@ -11,9 +11,25 @@
 				<div class="item">
 					<h5>{{ venue.name }}</h5>
 				</div>
+				<button class="delete-button" data-id="{{venue.id}}"> Delete! </button>
 			</a>
 		</li>
 		{% endfor %}
 	</ul>
+
+	<script>
+		const dButton = document.querySelectorAll(".delete-button")
+		dButton.forEach(button => {
+			button.onclick = (e) => {
+				e.preventDefault()
+				fetch(`/venues/${e.target.dataset.id}`, {
+					method: 'DELETE'
+				})
+				.then(res => {
+					window.location.href = res.url;
+				})
+			}
+		});
+	</script>
 {% endfor %}
 {% endblock %}
