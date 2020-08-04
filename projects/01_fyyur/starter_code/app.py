@@ -41,9 +41,7 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
-    website = db.Column(db.String)
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String)
+    genres = db.Column(db.String(500))
     shows = db.relationship('Show', backref='venue')
 
     def __repr__(self):
@@ -57,7 +55,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
@@ -92,6 +90,13 @@ def format_datetime(value, format='medium'):
   return babel.dates.format_datetime(date, format)
 
 app.jinja_env.filters['datetime'] = format_datetime
+
+def get_num_upcoming_shows(venue):
+  count = 0
+  for show in venue.shows:
+    if show.start_time > datetime.today():
+      count = count + 1
+  return count
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -142,7 +147,6 @@ def venues():
       "city": k[0],
       "state": k[1],
       "venues": v,
-      # "num_upcoming_shows":  # TODO: calcular o numero de upcoming shows
     })
   return render_template('pages/venues.html', areas=data)
 
@@ -267,22 +271,33 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: add missing parameters for venue from form
   error = False
   try:
     form = VenueForm(request.form)
+    print(form.name.data)
     venue = Venue(
       name=form.name.data,
       city=form.city.data,
       state=form.state.data,
-      address=form.address.data,
       phone=form.phone.data,
-      image_link=form.image_link.data,
-      genres=form.genres.data,
-      facebook_link=form.facebook_link.data
+     # genres="['" + form.genres.data + "']",
+      #image_link=form.image_link.data,
+      #facebook_link=form.facebook_link.data,
+      address=form.address.data
     )
+    print("PRINTANDO VENUE+++++++++++++++++")
+    print(venue.name)
+    print(venue.city)
+    print(venue.state)
+    print(venue.phone)
+    #print(venue.genres)
+    #print(venue.image_link)
+    #print(venue.facebook_link)
+    print(venue.address)
     db.session.add(venue)
+    print("PAssou do ADDD")
     db.session.commit()
+    print("COMMITOU")
   except:
     error = True
     db.session.rollback()
