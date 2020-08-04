@@ -272,17 +272,19 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # TODO: add missing parameters for venue from form
   error = False
   try:
-    data = request.form
+    form = VenueForm(request.form)
     venue = Venue(
-      name=data['name'],
-      city=data['city'],
-      state=data['state'],
-      address=data['address'],
-      phone=data['phone']
+      name=form.name.data,
+      city=form.city.data,
+      state=form.state.data,
+      address=form.address.data,
+      phone=form.phone.data,
+      image_link=form.image_link.data,
+      genres=form.genres.data,
+      facebook_link=form.facebook_link.data
     )
     db.session.add(venue)
     db.session.commit()
