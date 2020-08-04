@@ -116,6 +116,7 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
+  '''
   data2=[{
     "city": "San Francisco",
     "state": "CA",
@@ -137,7 +138,7 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
-
+  '''
   venues = Venue.query.all()
   auxDict = {}
   for v in venues:
@@ -172,7 +173,7 @@ def search_venues():
   matching_venues = Venue.query.filter(Venue.name.ilike('%'+search_term+'%')).all()
   response = {
     "count": len(matching_venues),
-    "data": matching_venues # TODO: Arrumar o num upcoming shows
+    "data": matching_venues 
   }
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
@@ -275,22 +276,52 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  error = False
+  try:
+    data = request.form
+    venue = Venue(
+      name=data['name'],
+      city=data['city'],
+      state=data['state'],
+      address=data['address'],
+      phone=data['phone']
+    )
+    db.session.add(venue)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  if(error):
+    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+  else:
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  error = False
+  try:
+    venue = Venue.query.filter_by(id=venue_id).first() # TODO: CHeck if has this venue_id?
+    db.session.delete(venue)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
 
+  if(error):
+    flash('Error! Venue ' + venue_id + ' was not deleted!')
+  else:
+    flash('Venue ' + venue_id + ' deleted successfully!')
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------
