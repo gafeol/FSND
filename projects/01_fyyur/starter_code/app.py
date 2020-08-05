@@ -270,16 +270,12 @@ def create_venue_form():
 def create_venue_submission():
   error = False
   try:
-    form = VenueForm(request.form)
     venue = Venue(
-      name=form.name.data,
-      city=form.city.data,
-      state=form.state.data,
-      phone=form.phone.data,
-      #genres=form.genres.data,
-      #image_link=form.image_link.data,
-      #facebook_link=form.facebook_link.data,
-      address=form.address.data
+      name=request.form['name'],
+      city=request.form['city'],
+      state=request.form['state'],
+      phone=request.form['phone'],
+      address=request.form['address']
     )
     db.session.add(venue)
     db.session.commit()
