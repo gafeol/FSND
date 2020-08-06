@@ -1,4 +1,4 @@
-#!/home/gafeol/Udacity/FSND/projects/01_fyyur/starter_code/env/bin/python2
+#!/home/gafeol/Udacity/FSND/projects/01_fyyur/starter_code/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
