@@ -2,10 +2,19 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+import sys
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import {
+  Flask, 
+  render_template, 
+  request, 
+  Response, 
+  flash, 
+  redirect, 
+  url_for
+}
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import logging
@@ -19,7 +28,7 @@ from models import db, app, moment, Venue, Show, Artist
 
 migrate = Migrate(app, db)
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
+  date = dateutil.parser.parse(str(value))
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -81,9 +90,6 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   '''
   response2={
     "count": 1,
@@ -105,8 +111,6 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
   '''
   data1={
     "id": 1,
@@ -207,7 +211,13 @@ def create_venue_submission():
       city=request.form['city'],
       state=request.form['state'],
       phone=request.form['phone'],
-      address=request.form['address']
+      address=request.form['address'],
+      genres=request.form.getlist('genres'),
+      image_link=request.form['image_link'],
+      facebook_link=request.form['facebook_link'],
+      website=request.form['website'],
+      seeking_talent=('seeking_talent' in request.form.keys()),
+      seeking_description=request.form['seeking_description']
     )
     db.session.add(venue)
     db.session.commit()
@@ -225,11 +235,9 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   error = False
   try:
-    venue = Venue.query.filter_by(id=venue_id).first() # TODO: CHeck if has this venue_id?
+    venue = Venue.query.filter_by(id=venue_id).first() 
     db.session.delete(venue)
     db.session.commit()
   except:
@@ -392,15 +400,18 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
   try:
     artist = Artist.query.get(artist_id)
     artist.name = request.form['name']
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
+    artist.genres = request.form.getlist('genres')
+    artist.image_link = request.form['image_link']
     artist.facebook_link = request.form['facebook_link']
+    artist.website = request.form['website']
+    artist.seeking_venue = ('seeking_venue' in request.form.keys())
+    artist.seeking_description = request.form['seeking_description']
     db.session.commit()
     flash('Artist ' + artist.name + ' edited successfully!')
   except:
@@ -444,7 +455,12 @@ def edit_venue_submission(venue_id):
     venue.state = request.form['state']
     venue.address = request.form['address']
     venue.phone = request.form['phone']
+    venue.genres = request.form.getlist('genres')
+    venue.image_link = request.form['image_link']
     venue.facebook_link = request.form['facebook_link']
+    venue.website = request.form['website']
+    venue.seeking_talent = ('seeking_talent' in request.form.keys())
+    venue.seeking_description = request.form['seeking_description']
     db.session.commit()
     flash('Venue ' + venue.name + ' edited successfully!')
   except:
@@ -467,21 +483,24 @@ def create_artist_form():
 def create_artist_submission():
   error = False
   try:
-    form = ArtistForm(request.form)
     artist = Artist(
-      name=form.name.data,
-      city=form.city.data,
-      state=form.state.data,
-      phone=form.phone.data,
-      genres=form.genres.data,
-      image_link=form.image_link.data,
-      facebook_link=form.facebook_link.data
+      name=request.form['name'],
+      city=request.form['city'],
+      state=request.form['state'],
+      phone=request.form['phone'],
+      genres=request.form.getlist('genres'),
+      image_link=request.form['image_link'],
+      facebook_link=request.form['facebook_link'],
+      website=request.form['website'],
+      seeking_venue=('seeking_venue' in request.form.keys()),
+      seeking_description=request.form['seeking_description']
     )
     db.session.add(artist)
     db.session.commit()
   except:
     error = True
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
@@ -555,7 +574,6 @@ def create_show_submission():
     show = Show(artist_id=request.form['artist_id'],
                 venue_id=request.form['venue_id'],
                 start_time=request.form['start_time'])
-    print(show)
     db.session.add(show)
     db.session.commit()
     flash('Show was successfully listed!')
