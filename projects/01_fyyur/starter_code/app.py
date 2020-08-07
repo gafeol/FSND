@@ -101,8 +101,8 @@ def search_venues():
   }
   '''
 
-  search_term = request.form.get('search_term', '')
-  matching_venues = Venue.query.filter(Venue.name.ilike('%'+search_term+'%')).all()
+  search_term = '%' + request.form.get('search_term', '') + '%'
+  matching_venues = Venue.query.filter(Venue.name.ilike(search_term)).all()
   response = {
     "count": len(matching_venues),
     "data": matching_venues 
@@ -224,6 +224,7 @@ def create_venue_submission():
   except:
     error = True
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
@@ -243,6 +244,7 @@ def delete_venue(venue_id):
   except:
     error = True
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
@@ -285,8 +287,8 @@ def search_artists():
     }]
   }
   '''
-  search_term = request.form.get('search_term', '')
-  matching = Artist.query.filter(Artist.name.ilike('%'+search_term+'%')).all()
+  search_term = '%' + request.form.get('search_term', '') + '%'
+  matching = Artist.query.filter(Artist.name.ilike(search_term)).all()
   response = {
     "count": len(matching),
     "data": matching 
@@ -417,6 +419,7 @@ def edit_artist_submission(artist_id):
   except:
     flash('Error while editing artist!')
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
@@ -466,6 +469,7 @@ def edit_venue_submission(venue_id):
   except:
     flash('Error while editing venue!')
     db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
@@ -580,6 +584,7 @@ def create_show_submission():
   except:
     db.session.rollback()
     flash('An error occurred. Show could not be listed.')
+    print(sys.exc_info())
   finally:
     db.session.close()
   return render_template('pages/home.html')
