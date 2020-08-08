@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
-
+from datetime import datetime
 app = Flask('app')
 moment = Moment(app)
 app.config.from_object('config')
@@ -27,6 +27,15 @@ class Venue(db.Model):
     def __repr__(self):
       return f'<Venue {self.id} {self.name}>'
 
+    def get_shows(self):
+      shows_query = Show.query.filter(Show.venue_id == self.id)
+      upcoming_shows  = shows_query.filter(Show.start_time > datetime.now()).all()
+      past_shows      = shows_query.filter(Show.start_time <= datetime.now()).all()
+      self.upcoming_shows_count = len(upcoming_shows)
+      self.upcoming_shows = upcoming_shows
+      self.past_shows_count = len(past_shows)
+      self.past_shows = past_shows
+
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -45,6 +54,15 @@ class Artist(db.Model):
 
     def __repr__(self):
       return f'<Artist {self.id} {self.name}>'
+
+    def get_shows(self):
+      shows_query = Show.query.filter(Show.artist_id == self.id)
+      upcoming_shows  = shows_query.filter(Show.start_time > datetime.now()).all()
+      past_shows      = shows_query.filter(Show.start_time <= datetime.now()).all()
+      self.upcoming_shows_count = len(upcoming_shows)
+      self.upcoming_shows = upcoming_shows
+      self.past_shows_count = len(past_shows)
+      self.past_shows = past_shows
 
 class Show(db.Model):
   __tablename__ = 'Show'

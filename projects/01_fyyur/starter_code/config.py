@@ -8,5 +8,11 @@ DEBUG = True
 
 # Connect to the database
 
-SQLALCHEMY_DATABASE_URI = 'postgres://postgres:papaapatia@localhost:5432/fyyur'
+DATABASE_NAME = "fyyur"
+username = 'postgres'
+password = 'papaapatia'
+url = 'localhost:5432'
+SQLALCHEMY_DATABASE_URI = "postgres://{}:{}@{}/{}".format(
+    username, password, url, DATABASE_NAME)
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
