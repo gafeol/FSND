@@ -16,16 +16,27 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  cors = CORS(app)
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
+  @app.after_request
+  def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
 
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories')
+  def get_categories():
+    data = Category.query.all()
+    return jsonify(data)
 
 
   '''
@@ -40,6 +51,21 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+
+  @app.route('/questions')
+  def get_questions():
+    page = int(request.args.get('page', 1))
+    data = Question.query.all()
+    print("GET QUESTIONS:")
+    res = list(map(lambda e: e.format(), data))
+    print(res)
+    return jsonify({
+      'questions': res[(page-1)*10:page*10],
+      'success': True,
+      'totalQuestions': len(data),
+      'categories': 1, # TODO : fix
+      'currentCategory':1 #TODO: fix
+      })
 
   '''
   @TODO: 
