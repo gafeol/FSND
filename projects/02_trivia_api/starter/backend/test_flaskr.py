@@ -24,6 +24,10 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
+            sampleQuestion = Question("Question", "Answer", "Category", 10)
+            self.db.session.add(sampleQuestion)
+            self.db.session.commit()
+            self.db.session.close()
     
     def tearDown(self):
         """Executed after reach test"""
@@ -34,6 +38,24 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
+    def test_get_questions(self):
+        res = self.client().get('/questions')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertTrue(data.get('success', False))
+
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertTrue(data.get('success', False))
+
+    def test_delete_question(self):
+        question = Question.query.first()
+        res = self.client().delete('/questions/{}'.format(question.id))
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertEqual(data.get('deleted'), question.id)
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
