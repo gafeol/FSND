@@ -56,6 +56,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
         self.assertEqual(data.get('deleted'), question.id)
+    
+    def test_post_question(self):
+        res = self.client().post('/questions', json={"question":"A", "answer":"B", "category":"C", "difficulty":1})
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertEqual(data.get('success'), True)
+        self.assertIsNotNone(data.get('question_id'))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

@@ -129,23 +129,27 @@ def create_app(test_config=None):
     data = request.get_json()
     question = data.get('question')
     answer = data.get('answer')
-    difficulty = data.get('difficulty')
     category = data.get('category')
+    difficulty = data.get('difficulty')
 
     success = True
     try:
-      q = Question(question, answer, difficulty, category)
+      q = Question(question, answer, category, difficulty)
       q.insert()
     except:
       success = False
       print(sys.exc_info())
-      db.session.rollback()
-    finally:
-      db.session.close()
-    return jsonify({
-      'success': success,
-      'question_id': q.id
-    })
+
+    if(success):
+      return jsonify({
+        'success': True,
+        'question_id': q.id
+      }), 200
+    else:
+      return jsonify({
+        'success': False
+      }), 400
+
 
   '''
   @TODO: 
