@@ -37,7 +37,7 @@ def create_app(test_config=None):
   @app.route('/categories')
   def get_categories():
     data = Category.query.all()
-    data = list(map(lambda e:  e.format(), data))
+    data = list(map(lambda e: e.type, data))
     return jsonify({
       'categories': data,
       'success': True
@@ -62,12 +62,15 @@ def create_app(test_config=None):
     page = int(request.args.get('page', 1))
     data = Question.query.all()
     res = list(map(lambda e: e.format(), data))
+
+    categoriesData = Category.query.all()
+    categoriesData = list(map(lambda e: e.type, categoriesData))
     return jsonify({
       'questions': res[(page-1)*10:page*10],
       'success': True,
       'totalQuestions': len(data),
-      'categories': 1, # TODO : fix
-      'currentCategory':1 #TODO: fix
+      'categories': categoriesData,
+      'currentCategory': 1 # TODO: Fix
       }), 200
 
   '''
@@ -120,6 +123,29 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    data = request.get_json()
+    question = data.get('question')
+    answer = data.get('answer')
+    difficulty = data.get('difficulty')
+    category = data.get('category')
+
+    success = True
+    try:
+      q = Question(question, answer, difficulty, category)
+      q.insert()
+    except:
+      success = False
+      print(sys.exc_info())
+      db.session.rollback()
+    finally:
+      db.session.close()
+    return jsonify({
+      'success': success,
+      'question_id': q.id
+    })
 
   '''
   @TODO: 
