@@ -72,9 +72,11 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+DELETE '/questions/<int:id>'
+POST '/questions'
+GET '/categories/<int:category_id>/questions'
+
 
 GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
@@ -87,8 +89,38 @@ GET '/categories'
 '5' : "Entertainment",
 '6' : "Sports"}
 
-```
+GET '/questions'
+- Fetches all queries and a dictionary of categories as described in the last endpoint
+- Request Arguments: 'page'
+- Returns: An object with the questions on the requested page, the total number of questions and all categories.
 
+
+DELETE '/questions/<int:id>'
+- Deletes a specific question given an id as a query parameter.
+- Request Arguments: 'id' passed as a query string
+- Returns: The deleted question id
+
+POST '/questions' 
+- Creates a new question or searches for an existing question (if the parameter 'searchQuestion' was passed)
+
+For the creation of a new question:
+- Request Arguments: 'question', 'answer', 'category' and 'difficulty', all the parameters to create a new Question object.
+- Returns: The id of the created question
+
+For searching an existing question:
+- Request Arguments: 'searchTerm', a string containing part of the 'question' parameter of the desired object.
+- Returns: 'questions', an array containing all matching questions and 'total_questions', the lenght of the previous array
+
+GET '/categories/<int:category_id>/questions'
+- Fetches all questions under a certain category defined by 'category_id'.
+- Request Arguments: 'category_id'
+- Returns: 'questions', an array containing all matching questions, 'total_questions', the lenght of the previous array and 'current_category', the id of the queried category.
+
+POST '/quizzes'
+- Fetches a question for the quiz game.
+- Request Arguments: 'previous_questions': an array of all the previous questions asked in a session of the quiz game and 'quiz_category', specifying what is the category of the current quiz game. If the category is "All", then 'quiz_category' should be empty or 0.
+- Returns: An object with the parameter 'question', specifying a random question for the quiz game.
+```
 
 ## Testing
 To run the tests, run

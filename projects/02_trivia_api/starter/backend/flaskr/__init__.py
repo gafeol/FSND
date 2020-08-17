@@ -43,7 +43,7 @@ def create_app(test_config=None):
     for category in catData:
       dictCategories[category.id] = category.type
     return jsonify({
-      'questions': res[(page-1)*10:page*10],
+      'questions': res[(page-1)*QUESTIONS_PER_PAGE:page*QUESTIONS_PER_PAGE],
       'success': True,
       'total_questions': len(res),
       'categories': dictCategories,
@@ -86,7 +86,7 @@ def create_app(test_config=None):
       return jsonify({
         'success': True,
         'question_id': q.id
-      }), 200
+      }), 201
     except:
       print(sys.exc_info())
       return jsonify({
@@ -129,7 +129,7 @@ def create_app(test_config=None):
   def get_quiz_question():
     data = request.get_json()    
     prev_questions = data.get('previous_questions')
-    quiz_category = data.get('quiz_category')
+    quiz_category = data.get('quiz_category', 0)
     try:
       query = Question.query.filter(Question.id.notin_(prev_questions))
       if quiz_category.get('id') is not 0 :
@@ -148,26 +148,33 @@ def create_app(test_config=None):
         'message': "Not able to get a new quiz question"
       }), 400
 
+  @app.errorhandler(400)
+  def handle_request_error(e):
+    return jsonify({
+      'success': False,
+      'message': "Request error!"
+    }), 400
+
   @app.errorhandler(404)
   def handle_not_found(e):
     return jsonify({
       'success': False,
       'message': "This resource was not found"
-    })
+    }), 404
   
   @app.errorhandler(422)
   def handle_unprocessable(e):
     return jsonify({
       'success': False,
       'message': "Unable to proccess this request"
-    })
+    }), 422
   
   @app.errorhandler(500)
   def handle_internal_error(e):
     return jsonify({
       'success': False,
       'message': "Internal error!"
-    })
+    }), 500
 
 
   return app
