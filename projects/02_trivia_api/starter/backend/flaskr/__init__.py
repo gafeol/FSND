@@ -179,11 +179,11 @@ def create_app(test_config=None):
         'questions': questions,
         'total_questions': len(questions),
         'current_category': 1 # TODO: FIX current category
-      })
+      }), 200
     except:
       return jsonify({
         'success': False
-      })
+      }), 400
 
   '''
   @TODO: 
@@ -193,6 +193,23 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  def get_category_questions(category_id):
+    try:
+      questions = Question.query.filter(Question.category == category_id).all()
+      print("Questions ", questions)
+      questions = list(map(lambda e: e.format(), questions))
+      return jsonify({
+        'success': True,
+        'questions': questions,
+        'total_questions': len(questions),
+        'current_category': category_id  
+      }), 200
+    except:
+      return jsonify({
+        'success': False
+      }), 400
+
 
 
   '''

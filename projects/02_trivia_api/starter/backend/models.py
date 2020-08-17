@@ -37,7 +37,7 @@ class Question(db.Model):
   def __init__(self, question, answer, category, difficulty):
     self.question = question
     self.answer = answer
-    self.category = category
+    self.category = category # TODO: na verdade eh int
     self.difficulty = difficulty
 
   def insert(self):

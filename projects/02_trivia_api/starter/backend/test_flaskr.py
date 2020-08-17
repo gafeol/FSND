@@ -64,6 +64,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data.get('success'), True)
         self.assertIsNotNone(data.get('question_id'))
 
+    # TODO: Create search question test
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
