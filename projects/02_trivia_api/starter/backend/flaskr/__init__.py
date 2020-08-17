@@ -5,23 +5,14 @@ from flask_cors import CORS
 import random
 import sys
 
-from models import db, setup_db, Question, Category
+from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
-  # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
   cors = CORS(app)
-
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -29,33 +20,17 @@ def create_app(test_config=None):
     response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
   @app.route('/categories')
   def get_categories():
     data = Category.query.all()
-    data = list(map(lambda e: e.type, data))
+    dictCategories = {}
+    for category in data:
+      dictCategories[category.id] = category.type
     return jsonify({
-      'categories': data,
+      'categories': dictCategories,
       'success': True
     }), 200
 
-
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
-
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
 
   @app.route('/questions')
   def get_questions():
@@ -63,72 +38,38 @@ def create_app(test_config=None):
     data = Question.query.all()
     res = list(map(lambda e: e.format(), data))
 
-    categoriesData = Category.query.all()
-    categoriesData = list(map(lambda e: e.type, categoriesData))
+    catData = Category.query.all()
+    dictCategories = {}
+    for category in catData:
+      dictCategories[category.id] = category.type
     return jsonify({
       'questions': res[(page-1)*10:page*10],
       'success': True,
-      'totalQuestions': len(data),
-      'categories': categoriesData,
-      'currentCategory': 1 # TODO: Fix
+      'total_questions': len(res),
+      'categories': dictCategories,
+      'current_category': 0 
       }), 200
-
-  '''
-  @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
-
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
-  '''
 
   @app.route('/questions/<int:id>', methods=['DELETE'])
   def delete_question(id):
     question = Question.query.filter_by(id=id).first()
-    if question is None:
-      return jsonify({
-        'success': False,
-      }), 400
-
-    error = False
     try:
-      db.session.delete(question)
-      db.session.commit()
-    except:
-      error = True
-      print(sys.exc_info())
-      return jsonify({
-          'success': False
-      })
-    finally:
-      db.session.close()
-
-    if(error):
-      return jsonify({
-        'success': False
-      }), 400
-    else:
+      question.delete()
       return jsonify({
         'success': True,
         'deleted': question.id
       }), 200
-
-
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+    except:
+      print(sys.exc_info())
+      return jsonify({
+          'success': False
+      })
 
   @app.route('/questions', methods=['POST'])
   def post_question():
     data = request.get_json()
     response = None
-    if(data.get('searchTerm', None) is not None):
+    if data.get('searchTerm') is not None:
       response = search_question(data)
     else:
       response = create_question(data)
@@ -139,35 +80,18 @@ def create_app(test_config=None):
     answer = data.get('answer')
     category = data.get('category')
     difficulty = data.get('difficulty')
-
-    success = True
     try:
       q = Question(question, answer, category, difficulty)
       q.insert()
-    except:
-      success = False
-      print(sys.exc_info())
-
-    if(success):
       return jsonify({
         'success': True,
         'question_id': q.id
       }), 200
-    else:
+    except:
+      print(sys.exc_info())
       return jsonify({
         'success': False
       }), 400
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
-
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
 
   def search_question(data):
     search_term = data.get('searchTerm')
@@ -178,26 +102,17 @@ def create_app(test_config=None):
         'success': True,
         'questions': questions,
         'total_questions': len(questions),
-        'current_category': 1 # TODO: FIX current category
+        'current_category': 0 
       }), 200
     except:
       return jsonify({
         'success': False
       }), 400
 
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
   @app.route('/categories/<int:category_id>/questions')
   def get_category_questions(category_id):
     try:
       questions = Question.query.filter(Question.category == category_id).all()
-      print("Questions ", questions)
       questions = list(map(lambda e: e.format(), questions))
       return jsonify({
         'success': True,
@@ -210,26 +125,49 @@ def create_app(test_config=None):
         'success': False
       }), 400
 
+  @app.route('/quizzes', methods=['POST'])
+  def get_quiz_question():
+    data = request.get_json()    
+    prev_questions = data.get('previous_questions')
+    quiz_category = data.get('quiz_category')
+    try:
+      query = Question.query.filter(Question.id.notin_(prev_questions))
+      if quiz_category.get('id') is not 0 :
+        query = query.filter(Question.category == quiz_category.get('id'))
+      res = query.all()     
+      idx = random.randint(0, len(res)-1)
+      question = res[idx].format()
+      return jsonify({
+        'success': True,
+        'question': question
+      }), 200
+    except:
+      print(sys.exc_info())
+      return jsonify({
+        'success': False,
+        'message': "Not able to get a new quiz question"
+      }), 400
 
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
-
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
+  @app.errorhandler(404)
+  def handle_not_found(e):
+    return jsonify({
+      'success': False,
+      'message': "This resource was not found"
+    })
   
-  return app
+  @app.errorhandler(422)
+  def handle_unprocessable(e):
+    return jsonify({
+      'success': False,
+      'message': "Unable to proccess this request"
+    })
+  
+  @app.errorhandler(500)
+  def handle_internal_error(e):
+    return jsonify({
+      'success': False,
+      'message': "Internal error!"
+    })
 
-    
+
+  return app
