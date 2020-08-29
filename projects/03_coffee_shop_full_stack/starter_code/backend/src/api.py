@@ -1,9 +1,9 @@
-import os
+import os, sys
 from flask import Flask, request, jsonify, abort
+from functools import wraps
 from sqlalchemy import exc
 import json
 from flask_cors import CORS
-
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
@@ -16,8 +16,7 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-# db_drop_and_create_all()
-
+#db_drop_and_create_all()
 ## ROUTES
 '''
 @TODO implement endpoint
@@ -27,7 +26,14 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks')
+def get_drinks():
+    drinks = Drink.query.all()
+    drinks = list(map(lambda e: e.short(), drinks)) 
+    return jsonify({    
+        'success': True,
+        'drinks': drinks
+    }), 200
 
 '''
 @TODO implement endpoint
@@ -37,7 +43,19 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks-detail')
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(jwt):
+    try:
+        drinks = Drink.query.all()
+        drinks = list(map(lambda e: e.long(), drinks)) 
+        return jsonify({    
+            'success': True,
+            'drinks': drinks
+        }), 200
+    except:
+        print(sys.exc_info())
+        abort(500)
 
 '''
 @TODO implement endpoint
@@ -48,6 +66,9 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+#@app.route('/drinks', methods=['POST'])
+#def post_drinks():
 
 
 '''
@@ -108,3 +129,9 @@ def unprocessable(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+@app.errorhandler(AuthError)
+def authError(error):
+    return jsonify({
+        'success': False,
+        'error': error
+    }), AuthError
