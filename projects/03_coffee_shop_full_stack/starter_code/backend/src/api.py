@@ -28,8 +28,8 @@ CORS(app)
 '''
 @app.route('/drinks')
 def get_drinks():
-    drinks = Drink.query.all()
-    drinks = list(map(lambda e: e.short(), drinks)) 
+    data = Drink.query.all()
+    drinks = [drink.short() for drink in data]
     return jsonify({    
         'success': True,
         'drinks': drinks
@@ -47,8 +47,10 @@ def get_drinks():
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
     try:
-        drinks = Drink.query.all()
-        drinks = list(map(lambda e: e.long(), drinks)) 
+        data = Drink.query.all()
+        drinks = []
+        if data:
+            drinks = [drink.long() for drink in data]
         return jsonify({    
             'success': True,
             'drinks': drinks
@@ -67,9 +69,21 @@ def get_drinks_detail(jwt):
         or appropriate status code indicating reason for failure
 '''
 
-#@app.route('/drinks', methods=['POST'])
-#def post_drinks():
-
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def post_drinks(jwt):
+    try:
+        data = request.get_json();
+        new_drink = Drink(title=data.get('title'), recipe=json.dumps(data.get('recipe')))
+        new_drink.insert()
+        drinks = [new_drink.long()]
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        }), 200
+    except:
+        print(sys.exc_info())
+        abort(500)
 
 '''
 @TODO implement endpoint
@@ -133,5 +147,5 @@ def unprocessable(error):
 def authError(error):
     return jsonify({
         'success': False,
-        'error': error
-    }), AuthError
+        'error': error.error.get('description')
+    }), error.status_code

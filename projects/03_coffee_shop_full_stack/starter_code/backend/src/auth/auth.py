@@ -42,7 +42,6 @@ def get_token_auth_header():
     return auth_parts[1]
 
 def check_permissions(permission, payload):
-    print("PAYLOAD:", payload)
     if permission not in payload.get('permissions', []):
         raise AuthError({
             'code': 'permission_missing',
