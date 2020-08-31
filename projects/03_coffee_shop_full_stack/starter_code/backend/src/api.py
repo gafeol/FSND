@@ -68,8 +68,13 @@ def post_drinks():
 def patch_drinks(id):
     data = request.get_json()
     drink = Drink.query.get(id)
-    if not drink:
-        abort(404)
+    if drink is None:
+        return json.dumps({
+            'success':
+            False,
+            'error':
+            'Drink #' + id + ' not found to be edited'
+        }), 404
     try:
         if data.get('title'):
             drink.title = data.get('title')
@@ -89,8 +94,13 @@ def patch_drinks(id):
 @requires_auth('delete:drinks')
 def delete_drink(id):
     drink = Drink.query.get(id)
-    if not drink:
-        abort(404)
+    if drink is None:
+        return json.dumps({
+            'success':
+            False,
+            'error':
+            'Drink #' + id + ' not found to be deleted'
+        }), 404
     try:
         drink.delete()
         return jsonify({
