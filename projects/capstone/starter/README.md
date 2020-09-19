@@ -1,8 +1,25 @@
-# DB Set Up
+# Capstone project
+
+## Set up
+
+To install the project dependencies, run `pip install -r requirements.txt`.
+
+By running:
 
 ```bash
-createdb capstone -U postgres
+source ./setup.sh
 ```
+
+You'll have configured the dev configuration for the environment variables required by Flask.
+
+Later running:
+
+```bash
+flask run
+```
+
+Shall start the project in Debug mode.
 
 ## TODO
 
+- Fix the 500 error on actor post (Use the created postman collection)
