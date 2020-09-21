@@ -22,4 +22,4 @@ Shall start the project in Debug mode.
 
 ## TODO
 
-- Fix the 500 error on actor post (Use the created postman collection)
+- Implement PATCH

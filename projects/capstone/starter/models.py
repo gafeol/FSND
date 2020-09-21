@@ -32,6 +32,10 @@ class Movie(db.Model):
     title = db.Column(db.String, nullable=False)
     release_date = db.Column(db.DateTime, nullable=False)
 
+    def __init__(self, t, rd):
+        self.title = t
+        self.release_date = rd
+
     def create(self):
         db.session.add(self)
         db.session.commit()
@@ -40,12 +44,26 @@ class Movie(db.Model):
         db.session.remove(self)
         db.session.commit()
     
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'release_date': self.release_date
+        }
+    
+    def __repr__(self):
+        return json.dumps(self.json())
 
 class Actor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String, nullable=True)
+
+    def __init__(self, name, age, gender):
+        self.name = name
+        self.age = age
+        self.gender = gender
 
     def create(self):
         db.session.add(self)
@@ -54,3 +72,14 @@ class Actor(db.Model):
     def delete(self):
         db.session.remove(self)
         db.session.commit()
+
+    def json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'age': self.age,
+            'gender': self.gender
+        }
+    
+    def __repr__(self):
+        return json.dumps(self.json())
