@@ -40,6 +40,9 @@ class Movie(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def patch(self):
+        db.session.commit()
+
     def delete(self):
         db.session.remove(self)
         db.session.commit()
@@ -67,6 +70,9 @@ class Actor(db.Model):
 
     def create(self):
         db.session.add(self)
+        db.session.commit()
+
+    def patch(self):
         db.session.commit()
 
     def delete(self):

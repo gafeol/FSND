@@ -68,18 +68,63 @@ def create_movie():
     print(sys.exc_info())
     abort(422)
 
+###################### PATCH routes
+
+@APP.route('/actors', methods=['PATCH'])
+def patch_actor():
+  try:
+    data = request.get_json()
+    id = data.get('id', None)
+    if id is None:
+      abort(400)
+    actor = Actor.query.get(id)
+    if data.get('name'):
+      actor.name = data.get('name')
+    if data.get('age'):
+      actor.age = data.get('age')
+    if data.get('gender'):
+      actor.gender = data.get('gender')
+    actor.patch()
+    return jsonify({
+      'success': True,
+      'patched': actor.json()
+    }), 200
+  except:
+    print(sys.exc_info())
+    abort(422)
+
+@APP.route('/movies', methods=['PATCH'])
+def patch_movie():
+  try:
+    data = request.get_json()
+    id = data.get('id', None)
+    if id is None:
+      abort(400)
+    movie = Movie.query.get(id)
+    if data.get('title'):
+      movie.title = data.get('title')
+    if data.get('release_date'):
+      movie.release_date  = data.get('release_date')
+    movie.patch()
+    return jsonify({
+      'success': True,
+      'movie': movie.json()
+    }), 200
+  except:
+    print(sys.exc_info())
+    abort(422)
 
 ###################### DELETE routes
 
 @APP.route('/actors/<int:id>', methods=['DELETE']) 
 def delete_actor(id):
   try:
-    actor = Actor.get(id)
+    actor = Actor.query.get(id)
     print(actor)
     actor.delete()
     return jsonify({
       'success': True,
-      'deleted': actor.id
+      'deleted': actor.json()
     })
   except:
     print(sys.exc_info())
@@ -88,36 +133,29 @@ def delete_actor(id):
 @APP.route('/movies/<int:id>', methods=['DELETE']) 
 def delete_movie(id):
   try:
-    movie = Movie.get(id)
+    movie = Movie.query.get(id)
     if movie is None:
       abort(404)
     print(movie)
     movie.delete()
     return jsonify({
       'success': True,
-      'deleted': movie.id
+      'deleted': movie.json()
     })
   except:
     print(sys.exc_info())
     abort(422)
 
-@APP.errorhandler(422)
-def unprocessable(error):
+
+###################### Error handlers
+
+@APP.errorhandler(400)
+def error_400(error):
     return jsonify({
         "success": False,
-        "error": 422,
-        "message": "unprocessable"
-    }), 422
-
-
-@APP.errorhandler(404)
-def error_404(error):
-    return jsonify({
-        "success": False,
-        "error": 404,
-        "message": "resource not found"
-    }), 404
-
+        "error": 400,
+        "message": "Error in request format"
+    }), 400
 
 @APP.errorhandler(401)
 def error_401(error):
@@ -136,6 +174,22 @@ def error_403(error):
         "message": "Forbidden"
     }), error
 
+
+@APP.errorhandler(404)
+def error_404(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "resource not found"
+    }), 404
+
+@APP.errorhandler(422)
+def unprocessable(error):
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
+
 if __name__ == '__main__':
     APP.run(host='0.0.0.0', port=8080, debug=True)
-
