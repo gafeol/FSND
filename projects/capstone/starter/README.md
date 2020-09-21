@@ -22,4 +22,7 @@ Shall start the project in Debug mode.
 
 ## TODO
 
-- Implement PATCH
+- Create Postman API tests
+- Create db relationship between actors and movies
+- Adds require auth for API
+- Create decorator to check for permissions
