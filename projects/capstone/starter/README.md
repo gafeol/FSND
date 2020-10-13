@@ -26,3 +26,8 @@ Shall start the project in Debug mode.
 - Create db relationship between actors and movies
 - Adds require auth for API
 - Create decorator to check for permissions
+- Deploy to heroku
+
+
+LER 
+https://knowledge.udacity.com/questions/118969

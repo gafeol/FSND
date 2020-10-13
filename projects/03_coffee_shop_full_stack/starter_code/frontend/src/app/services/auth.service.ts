@@ -54,6 +54,7 @@ export class AuthService {
   load_jwts() {
     this.token = localStorage.getItem(JWTS_LOCAL_KEY) || null;
     if (this.token) {
+      console.log('before decoding JWT ', this.token)
       this.decodeJWT(this.token);
     }
   }

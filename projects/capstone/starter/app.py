@@ -1,8 +1,13 @@
 import os, sys
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from models import setup_db, Actor, Movie
+from auth import AuthError, requires_auth
+from authlib.integrations.flask_client import OAuth
+from six.moves.urllib.parse import urlencode
+from dotenv import load_dotenv, find_dotenv
+
 
 def create_app(test_config=None):
   app = Flask(__name__)
@@ -11,6 +16,19 @@ def create_app(test_config=None):
   return app
 
 APP = create_app()
+oauth = OAuth(APP)
+
+auth0 = oauth.register(
+    'auth0',
+    client_id='o5EiBp0MLuqlzwQW9lXeAo3JeZQ4fH8L',
+    client_secret='YOUR_CLIENT_SECRET',  # TODO: Adicionar secret de client
+    api_base_url='https://dev-ingcvevp.us.auth0.com',
+    access_token_url='https://dev-ingcvevp.us.auth0.com/oauth/token',
+    authorize_url='https://dev-ingcvevp.us.auth0.com/authorize',
+    client_kwargs={
+        'scope': 'openid profile email',
+    },
+)
 
 @APP.route('/actors')
 def get_actors():
@@ -147,6 +165,28 @@ def delete_movie(id):
     abort(422)
 
 
+@APP.route('/login')
+def login():
+    return auth0.authorize_redirect(redirect_uri='YOUR_CALLBACK_URL')
+
+
+# Here we're using the /callback route.
+@APP.route('/callback')
+def callback_handling():
+    # Handles response from token endpoint
+    auth0.authorize_access_token()
+    resp = auth0.get('userinfo')
+    userinfo = resp.json()
+
+    # Store the user information in flask session.
+    session['jwt_payload'] = userinfo
+    session['profile'] = {
+        'user_id': userinfo['sub'],
+        'name': userinfo['name'],
+        'picture': userinfo['picture']
+    }
+    return redirect('/')
+
 ###################### Error handlers
 
 @APP.errorhandler(400)
@@ -190,6 +230,16 @@ def unprocessable(error):
         "error": 422,
         "message": "unprocessable"
     }), 422
+
+
+@APP.errorhandler(AuthError)
+def authError(error):
+    return jsonify({
+        'success': False,
+        'error': error.status_code,
+        'message': error.error.get('description')
+
+    }), error.status_code
 
 if __name__ == '__main__':
     APP.run(host='0.0.0.0', port=8080, debug=True)

@@ -1,6 +1,7 @@
 import os
 import sys
 from flask import Flask, request, jsonify, abort
+from flask_httpauth import HTTPTokenAuth
 from functools import wraps
 from sqlalchemy import exc
 import json
@@ -8,13 +9,10 @@ from flask_cors import CORS
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
+auth = HTTPTokenAuth(scheme='Bearer')
 app = Flask(__name__)
 setup_db(app)
 CORS(app)
-
-# db_drop_and_create_all()
-# ROUTES
-
 
 @app.route('/drinks')
 def get_drinks():
